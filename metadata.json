@@ -1,0 +1,5 @@
+{
+  "name": "Analisador de Performance JMeter",
+  "description": "Um dashboard moderno e minimalista para visualizar dados de performance do JMeter com análise preditiva.",
+  "requestFramePermissions": []
+}
