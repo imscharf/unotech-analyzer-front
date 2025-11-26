@@ -3,26 +3,28 @@ import Dashboard from './components/Dashboard';
 
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col font-sans text-zinc-100 selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 selection:bg-blue-500/30">
       {/* Navigation Bar */}
-      <nav className="bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800 sticky top-0 z-50">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 p-1.5 rounded-lg shadow-inner shadow-indigo-500/10">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" />
+              {/* Nova Logo UnoTech */}
+              <div className="bg-gradient-to-br from-blue-600 to-cyan-500 text-white p-2 rounded-xl shadow-lg shadow-blue-500/20 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z" />
                 </svg>
               </div>
-              <h1 className="text-xl font-bold text-zinc-100 tracking-tight">
-                JMeter<span className="text-indigo-400">Analyzer</span>
-              </h1>
-            </div>
-            <div className="flex items-center">
-              <a href="#" className="text-sm font-medium text-zinc-400 hover:text-indigo-400 transition-colors">
-                Documentação
-              </a>
+              
+              {/* Tipografia UnoTech */}
+              <div className="flex flex-col justify-center -space-y-1">
+                <h1 className="text-xl font-bold tracking-tight text-slate-800">
+                  Uno<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Tech</span>
+                </h1>
+                <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-widest ml-0.5">
+                  Analytics
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -34,13 +36,10 @@ const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-zinc-900 border-t border-zinc-800 mt-auto">
-        <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <p className="text-zinc-500 text-xs">
-            © {new Date().getFullYear()} JMeter Performance Analytics.
-          </p>
-          <p className="text-zinc-500 text-xs">
-            v1.0.0
+      <footer className="bg-white border-t border-slate-200 mt-auto">
+        <div className="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-center items-center">
+          <p className="text-slate-400 text-sm font-medium">
+            © {new Date().getFullYear()} UnoTech Analytics. Todos os direitos reservados.
           </p>
         </div>
       </footer>

@@ -1,23 +1,22 @@
 import React, { useState, useCallback } from 'react';
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import { AnalysisData } from '../types';
 import { analyzeFile } from '../services/api';
 import { UploadZone } from './UploadZone';
-import { StatsCard } from './StatsCard';
 
-// Custom Tooltip for Recharts (Dark Mode)
+// Custom Tooltip for Recharts (Light Mode)
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-zinc-800 p-4 border border-zinc-700 shadow-2xl rounded-xl text-sm">
-        <p className="font-semibold text-zinc-300 mb-2">Tempo: {Number(label).toFixed(2)}s</p>
+      <div className="bg-white/90 backdrop-blur-sm p-4 border border-slate-200 shadow-xl rounded-2xl text-sm ring-1 ring-slate-100">
+        <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1">Tempo: {Number(label).toFixed(2)}s</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 mb-1 last:mb-0">
-            <div className="w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: entry.color, color: entry.color }}></div>
-            <span className="text-zinc-400 capitalize">{entry.name}:</span>
-            <span className="font-mono font-medium text-zinc-100">
+            <div className="w-2 h-2 rounded-full ring-2 ring-offset-1 ring-offset-white" style={{ backgroundColor: entry.color }}></div>
+            <span className="text-slate-500 capitalize">{entry.name}:</span>
+            <span className="font-mono font-bold text-slate-800">
               {Number(entry.value).toFixed(2)}
             </span>
           </div>
@@ -53,28 +52,17 @@ const Dashboard: React.FC = () => {
     setError(null);
   };
 
-  // Transform data for charts
   const mainData = data?.dados.t.map((t, i) => ({
     t,
     elapsed: data.dados.elapsed[i],
     predito: data.dados.predito[i],
   })) || [];
 
-  const futureData = data?.dados.future_t.map((t, i) => ({
-    t,
-    predito: data.dados.future_pred[i],
-  })) || [];
-
-  const errorData = data?.dados.t.map((t, i) => ({
-    t,
-    erro: data.dados.erro[i],
-  })) || [];
-
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center w-full min-h-[60vh] animate-fade-in">
         {error && (
-          <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center text-rose-400 max-w-md w-full">
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center text-red-600 max-w-md w-full shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
@@ -89,151 +77,93 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header / Toolbar */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-zinc-800">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h2 className="text-2xl font-bold text-zinc-100">Resultados da Análise</h2>
-          <p className="text-zinc-500 text-sm mt-1">Métricas de performance e modelagem preditiva.</p>
+          <h2 className="text-2xl font-bold text-slate-800">Resultados da Análise</h2>
+          <p className="text-slate-500 text-sm mt-1">Visualização de dados processados.</p>
         </div>
         <button
           onClick={handleReset}
-          className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 border border-zinc-700 hover:border-indigo-500/50 hover:bg-zinc-800 text-zinc-300 hover:text-indigo-400 rounded-xl transition-all shadow-lg shadow-black/20 font-medium text-sm group"
+          className="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 hover:border-blue-500 text-slate-600 hover:text-blue-600 rounded-full transition-all shadow-sm hover:shadow-md font-medium text-sm group"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
           </svg>
-          Analisar Novo Arquivo
+          Nova Análise
         </button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard 
-          label="Score R²" 
-          value={data.r2.toFixed(4)} 
-          color="indigo" 
-        />
-        <StatsCard 
-          label="RMSE (Erro)" 
-          value={`${data.rmse.toFixed(2)} ms`} 
-          color="rose" 
-        />
-        <StatsCard 
-          label="Coeficiente" 
-          value={data.coeficiente.toFixed(4)} 
-          color="emerald" 
-        />
-      </div>
-
-      {/* Main Charts Grid */}
-      <div className="space-y-8">
+      {/* Main Charts Grid - Agora contendo apenas o gráfico principal solicitado */}
+      <div className="w-full">
         
-        {/* Chart 1: Actual vs Predicted */}
-        <div className="bg-zinc-900 p-6 md:p-8 rounded-2xl shadow-lg shadow-black/20 border border-zinc-800">
-          <div className="mb-8">
-            <h3 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-              <span className="w-1 h-6 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></span>
-              Real vs Predito
-            </h3>
-            <p className="text-zinc-500 text-sm ml-3 mt-1">Comparação do tempo decorrido real com o modelo de regressão.</p>
+        {/* Chart: Anomalias */}
+        <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-white">
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                Anomalias
+              </h3>
+              {/* Subtítulo removido conforme solicitado */}
+            </div>
+            {/* Visual Indicator - Renomeado */}
+            <div className="flex gap-4 text-xs font-medium">
+               <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Anomalias</div>
+               <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-cyan-400"></span> Predições</div>
+            </div>
           </div>
-          <div className="h-[400px] w-full">
+          
+          <div className="h-[500px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={mainData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorElapsed" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorPredito" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.1}/>
+                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                 <XAxis 
                   dataKey="t" 
-                  stroke="#52525b" 
-                  tick={{fontSize: 12, fill: '#71717a'}} 
+                  stroke="#94a3b8" 
+                  tick={{fontSize: 12, fill: '#64748b'}} 
                   tickLine={false}
                   axisLine={false}
-                  label={{ value: "Tempo (s)", position: "insideBottomRight", offset: -10, fill: "#52525b", fontSize: 12 }} 
+                  label={{ value: "Tempo (s)", position: "insideBottomRight", offset: -10, fill: "#94a3b8", fontSize: 12 }} 
                 />
                 <YAxis 
-                  stroke="#52525b" 
-                  tick={{fontSize: 12, fill: '#71717a'}} 
+                  stroke="#94a3b8" 
+                  tick={{fontSize: 12, fill: '#64748b'}} 
                   tickLine={false}
                   axisLine={false}
-                  label={{ value: "ms", angle: -90, position: "insideLeft", fill: "#52525b", fontSize: 12 }} 
+                  label={{ value: "ms", angle: -90, position: "insideLeft", fill: "#94a3b8", fontSize: 12 }} 
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} formatter={(value) => <span className="text-zinc-400">{value}</span>}/>
+                <Legend iconType="circle" wrapperStyle={{ display: 'none' }} />
+                
                 <Area 
                   type="monotone" 
                   dataKey="elapsed" 
-                  stroke="#6366f1" 
-                  strokeWidth={2}
+                  stroke="#3b82f6" 
+                  strokeWidth={3}
                   fillOpacity={1} 
                   fill="url(#colorElapsed)" 
-                  name="Real (Observado)"
-                  activeDot={{ r: 6, strokeWidth: 0, fill: "#818cf8" }}
+                  name="Anomalias"
                 />
-                <Line 
+                <Area 
                   type="monotone" 
                   dataKey="predito" 
-                  stroke="#fbbf24" 
-                  strokeWidth={2} 
-                  strokeDasharray="5 5"
-                  dot={false} 
-                  name="Predição do Modelo" 
+                  stroke="#06b6d4" 
+                  strokeWidth={3} 
+                  strokeDasharray="4 4"
+                  fill="url(#colorPredito)"
+                  name="Predições" 
                 />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Chart 2: Residuals */}
-          <div className="bg-zinc-900 p-6 rounded-2xl shadow-lg shadow-black/20 border border-zinc-800">
-            <h3 className="text-lg font-bold text-zinc-100 mb-2">Resíduos do Modelo</h3>
-            <p className="text-zinc-500 text-sm mb-6">Diferença entre valores observados e preditos.</p>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={errorData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis dataKey="t" hide />
-                  <YAxis stroke="#52525b" tick={{fontSize: 11, fill: '#71717a'}} tickLine={false} axisLine={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="erro" 
-                    stroke="#a78bfa" 
-                    strokeWidth={2}
-                    dot={false} 
-                    name="Erro" 
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Chart 3: Future Trend */}
-          <div className="bg-zinc-900 p-6 rounded-2xl shadow-lg shadow-black/20 border border-zinc-800">
-            <h3 className="text-lg font-bold text-zinc-100 mb-2">Previsão de Tendência</h3>
-            <p className="text-zinc-500 text-sm mb-6">Performance projetada baseada na regressão.</p>
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={futureData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis dataKey="t" hide />
-                  <YAxis stroke="#52525b" tick={{fontSize: 11, fill: '#71717a'}} tickLine={false} axisLine={false} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="predito" 
-                    stroke="#f43f5e" 
-                    strokeWidth={2} 
-                    dot={false} 
-                    name="Previsão" 
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
           </div>
         </div>
       </div>

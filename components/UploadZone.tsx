@@ -47,13 +47,13 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onFileSelect, isLoading 
       className={`
         relative group cursor-pointer 
         flex flex-col items-center justify-center 
-        w-full max-w-2xl h-64 
-        rounded-3xl border border-dashed 
+        w-full max-w-2xl h-72
+        rounded-[2rem] border-2 border-dashed 
         transition-all duration-300 ease-in-out
-        ${isLoading ? 'opacity-50 cursor-not-allowed border-zinc-700 bg-zinc-900/50' : 
+        ${isLoading ? 'opacity-50 cursor-not-allowed border-slate-200 bg-slate-50' : 
           isDragging 
-            ? 'border-indigo-500 bg-indigo-500/10 scale-[1.02]' 
-            : 'border-zinc-700 hover:border-indigo-500/50 hover:bg-zinc-900 bg-zinc-900/50 shadow-lg shadow-black/20'
+            ? 'border-blue-500 bg-blue-50/50 scale-[1.01] shadow-xl shadow-blue-500/10' 
+            : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50 bg-white shadow-xl shadow-slate-200/50'
         }
       `}
     >
@@ -68,25 +68,22 @@ export const UploadZone: React.FC<UploadZoneProps> = ({ onFileSelect, isLoading 
 
       {isLoading ? (
         <div className="flex flex-col items-center space-y-4">
-          <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-          <p className="text-indigo-400 font-medium animate-pulse">Analisando dados...</p>
+          <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin"></div>
+          <p className="text-blue-500 font-medium animate-pulse">Processando dados...</p>
         </div>
       ) : (
-        <div className="text-center p-6">
-          <div className="w-16 h-16 bg-zinc-800 text-zinc-400 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-300 border border-zinc-700 group-hover:border-indigo-500/30 shadow-inner">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+        <div className="text-center p-8">
+          <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all duration-300 shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m6.75 12-3-3m0 0-3 3m3-3v6" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-zinc-200 mb-1">
-            Upload CSV do JMeter
+          <h3 className="text-xl font-bold text-slate-800 mb-2">
+            Upload do Arquivo JMeter
           </h3>
-          <p className="text-zinc-500 text-sm mb-4">
-            Arraste e solte seu arquivo aqui, ou clique para buscar
+          <p className="text-slate-500 text-sm mb-6 max-w-sm mx-auto">
+            Arraste seu arquivo <span className="font-mono text-blue-600 bg-blue-50 px-1 rounded">.csv</span> aqui ou clique para selecionar do computador
           </p>
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-xs font-medium text-zinc-400">
-            Formato suportado: .csv
-          </span>
         </div>
       )}
     </div>
