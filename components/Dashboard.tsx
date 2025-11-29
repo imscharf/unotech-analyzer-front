@@ -185,7 +185,7 @@ const Dashboard: React.FC = () => {
                 y={data.consumo_ultimo_minuto_medio} 
                 stroke="#334155" 
                 strokeDasharray="3 3"
-                label={{ value: 'Atual', position: 'right', fill: '#334155', fontSize: 12 }} 
+                label={{ value: 'Atual ', position: 'right', fill: '#334155', fontSize: 12 }} 
               />
 
               <Bar 
