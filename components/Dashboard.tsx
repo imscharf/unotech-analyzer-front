@@ -1,26 +1,54 @@
 import React, { useState, useCallback } from 'react';
 import {
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
+  BarChart, Bar, Cell, ReferenceLine
 } from 'recharts';
-import { AnalysisData } from '../types';
-import { analyzeFile } from '../services/api';
 import { UploadZone } from './UploadZone';
+import { analyzeFile } from '../services/api';
 
-// Custom Tooltip for Recharts (Light Mode)
+// 1. Definindo a nova tipagem baseada no JSON da imagem
+interface Previsao {
+  janela_minutos: number;
+  consumo_medio_previsto: number;
+  tendencia: string;
+}
+
+interface AnalysisData {
+  consumo_ultimo_minuto_medio: number;
+  previsoes: Previsao[];
+}
+
+// 2. Cores baseadas na tendência
+const getTrendColor = (trend: string) => {
+  if (trend.toLowerCase().includes('aumento')) return '#f59e0b'; // Amber/Orange
+  if (trend.toLowerCase().includes('queda')) return '#10b981';   // Emerald/Green
+  return '#3b82f6'; // Blue default
+};
+
+// 3. Tooltip Customizado para o novo formato
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const data = payload[0].payload;
     return (
-      <div className="bg-white/90 backdrop-blur-sm p-4 border border-slate-200 shadow-xl rounded-2xl text-sm ring-1 ring-slate-100">
-        <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1">Tempo: {Number(label).toFixed(2)}s</p>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2 mb-1 last:mb-0">
-            <div className="w-2 h-2 rounded-full ring-2 ring-offset-1 ring-offset-white" style={{ backgroundColor: entry.color }}></div>
-            <span className="text-slate-500 capitalize">{entry.name}:</span>
-            <span className="font-mono font-bold text-slate-800">
-              {Number(entry.value).toFixed(2)}
-            </span>
-          </div>
-        ))}
+      <div className="bg-white/95 backdrop-blur-sm p-4 border border-slate-200 shadow-xl rounded-2xl text-sm ring-1 ring-slate-100">
+        <p className="font-bold text-slate-700 mb-2 border-b border-slate-100 pb-1">
+          Janela: {data.janela_minutos} minutos
+        </p>
+        <div className="space-y-2">
+           <div className="flex justify-between gap-4">
+              <span className="text-slate-500">Previsto:</span>
+              <span className="font-mono font-bold text-slate-800">
+                {Number(data.consumo_medio_previsto).toFixed(2)}
+              </span>
+           </div>
+           <div className="flex justify-between gap-4 items-center">
+              <span className="text-slate-500">Tendência:</span>
+              <span className="font-bold px-2 py-0.5 rounded-full text-xs text-white" 
+                style={{ backgroundColor: getTrendColor(data.tendencia) }}>
+                {data.tendencia}
+              </span>
+           </div>
+        </div>
       </div>
     );
   }
@@ -37,6 +65,7 @@ const Dashboard: React.FC = () => {
     setError(null);
     
     try {
+      // Assumindo que a API agora retorna o novo formato JSON
       const result = await analyzeFile(file);
       setData(result);
     } catch (err: any) {
@@ -52,20 +81,11 @@ const Dashboard: React.FC = () => {
     setError(null);
   };
 
-  const mainData = data?.dados.t.map((t, i) => ({
-    t,
-    elapsed: data.dados.elapsed[i],
-    predito: data.dados.predito[i],
-  })) || [];
-
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center w-full min-h-[60vh] animate-fade-in">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center text-red-600 max-w-md w-full shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
             <span className="text-sm font-medium">{error}</span>
           </div>
         )}
@@ -76,95 +96,109 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Header / Toolbar */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-200">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Resultados da Análise</h2>
-          <p className="text-slate-500 text-sm mt-1">Visualização de dados processados.</p>
+          <h2 className="text-2xl font-bold text-slate-800">Análise Preditiva</h2>
+          <p className="text-slate-500 text-sm mt-1">Comparativo de consumo atual vs. janelas futuras.</p>
         </div>
         <button
           onClick={handleReset}
           className="flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 hover:border-blue-500 text-slate-600 hover:text-blue-600 rounded-full transition-all shadow-sm hover:shadow-md font-medium text-sm group"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-          </svg>
           Nova Análise
         </button>
       </div>
 
-      {/* Main Charts Grid - Agora contendo apenas o gráfico principal solicitado */}
-      <div className="w-full">
+      {/* Grid de KPIs (Indicadores) */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Card: Consumo Atual */}
+        <div className="bg-slate-800 text-white p-6 rounded-3xl shadow-lg flex flex-col justify-center">
+            <span className="text-slate-400 text-sm font-medium mb-1">Consumo Médio (Último Min)</span>
+            <div className="text-4xl font-bold font-mono">
+                {data.consumo_ultimo_minuto_medio.toFixed(1)}
+            </div>
+            <span className="text-xs text-slate-400 mt-2">Referência Base</span>
+        </div>
+
+        {/* Cards das Previsões */}
+        {data.previsoes.map((prev, idx) => (
+            <div key={idx} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                <div className="flex justify-between items-start mb-4">
+                    <span className="text-slate-500 text-sm font-bold bg-slate-50 px-2 py-1 rounded-lg">
+                        {prev.janela_minutos} Minutos
+                    </span>
+                    {prev.tendencia.includes("Aumento") ? (
+                        <span className="text-amber-500 bg-amber-50 p-1.5 rounded-full">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                        </span>
+                    ) : (
+                        <span className="text-emerald-500 bg-emerald-50 p-1.5 rounded-full">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
+                        </span>
+                    )}
+                </div>
+                <div>
+                    <div className="text-2xl font-bold text-slate-800 font-mono mb-1">
+                        {prev.consumo_medio_previsto.toFixed(1)}
+                    </div>
+                    <span className={`text-xs font-bold ${prev.tendencia.includes("Aumento") ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        {prev.tendencia}
+                    </span>
+                </div>
+            </div>
+        ))}
+      </div>
+
+      {/* Chart: Previsões vs Atual */}
+      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-white">
+        <div className="mb-8">
+            <h3 className="text-lg font-bold text-slate-800">Projeção de Consumo</h3>
+            <p className="text-sm text-slate-400">Linha tracejada indica o consumo médio atual.</p>
+        </div>
         
-        {/* Chart: Anomalias */}
-        <div className="bg-white p-6 md:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-white">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                Anomalias
-              </h3>
-              {/* Subtítulo removido conforme solicitado */}
-            </div>
-            {/* Visual Indicator - Renomeado */}
-            <div className="flex gap-4 text-xs font-medium">
-               <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500"></span> Anomalias</div>
-               <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-cyan-400"></span> Predições</div>
-            </div>
-          </div>
-          
-          <div className="h-[500px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mainData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorElapsed" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorPredito" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis 
-                  dataKey="t" 
-                  stroke="#94a3b8" 
-                  tick={{fontSize: 12, fill: '#64748b'}} 
-                  tickLine={false}
-                  axisLine={false}
-                  label={{ value: "Tempo (s)", position: "insideBottomRight", offset: -10, fill: "#94a3b8", fontSize: 12 }} 
-                />
-                <YAxis 
-                  stroke="#94a3b8" 
-                  tick={{fontSize: 12, fill: '#64748b'}} 
-                  tickLine={false}
-                  axisLine={false}
-                  label={{ value: "ms", angle: -90, position: "insideLeft", fill: "#94a3b8", fontSize: 12 }} 
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend iconType="circle" wrapperStyle={{ display: 'none' }} />
-                
-                <Area 
-                  type="monotone" 
-                  dataKey="elapsed" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorElapsed)" 
-                  name="Anomalias"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="predito" 
-                  stroke="#06b6d4" 
-                  strokeWidth={3} 
-                  strokeDasharray="4 4"
-                  fill="url(#colorPredito)"
-                  name="Predições" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+        <div className="h-[400px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data.previsoes} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              
+              <XAxis 
+                dataKey="janela_minutos" 
+                tickFormatter={(val) => `${val} min`}
+                stroke="#94a3b8" 
+                tick={{fontSize: 12, fill: '#64748b'}} 
+                tickLine={false}
+                axisLine={false}
+              />
+              
+              <YAxis 
+                stroke="#94a3b8" 
+                tick={{fontSize: 12, fill: '#64748b'}} 
+                tickLine={false}
+                axisLine={false}
+              />
+              
+              <Tooltip content={<CustomTooltip />} cursor={{fill: '#f8fafc'}} />
+              
+              {/* Linha de referência do valor atual */}
+              <ReferenceLine 
+                y={data.consumo_ultimo_minuto_medio} 
+                stroke="#334155" 
+                strokeDasharray="3 3"
+                label={{ value: 'Atual', position: 'right', fill: '#334155', fontSize: 12 }} 
+              />
+
+              <Bar 
+                dataKey="consumo_medio_previsto" 
+                radius={[8, 8, 0, 0]}
+                barSize={60}
+              >
+                {data.previsoes.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getTrendColor(entry.tendencia)} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
