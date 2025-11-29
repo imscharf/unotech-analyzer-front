@@ -1,6 +1,6 @@
 import { AnalysisData } from '../types';
 
-const API_URL = "https://huggingface.co/spaces/imscharf/analyzer/predict";
+const API_URL = "https://imscharf-analyzer.hf.space/predict";
 
 export const analyzeFile = async (file: File): Promise<AnalysisData> => {
   const formData = new FormData();
